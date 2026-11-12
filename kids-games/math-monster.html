@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<title>Math Monster Feeder</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@700;800&display=swap">
+<style>
+/* Layout: a night-time meadow. Monster stands on the left (top in portrait), snacks drift toward it across the field. One committed dark look. */
+:root{
+  --night:#2a2152; --night-2:#372c6b; --field:#3f3478; --grass:#4e9b5a; --grass-dark:#367a43;
+  --moon:#fff6d6; --ink:#1f1a38; --text:#fff8ee; --soft:#c9c0f0;
+  --yes:#4fd38a; --no:#ff6f61; --gold:#ffcf4a;
+  --display:"Baloo 2","Nunito","Trebuchet MS",system-ui,sans-serif;
+  --body:"Nunito","Trebuchet MS",system-ui,sans-serif;
+  --m-body:#ff8a3d; --m-dark:#d0621e;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--night);color:var(--text);font-family:var(--body);font-size:18px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 18px;
+  -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-text-size-adjust:100%;overscroll-behavior:none}
+button{font:inherit;color:inherit;touch-action:manipulation;cursor:pointer;border:0}
+button:focus-visible{outline:4px solid var(--gold);outline-offset:3px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.05;text-wrap:balance}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+
+.bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bar .spacer{flex:1}
+.pill{background:var(--night-2);border-radius:999px;padding:6px 16px;font-family:var(--display);font-weight:700;font-size:22px}
+.btn{border-radius:18px;padding:12px 22px;font-family:var(--display);font-weight:700;font-size:22px;background:var(--moon);color:var(--ink);box-shadow:0 5px 0 rgba(0,0,0,.35);min-height:58px}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+.btn.small{min-height:48px;padding:6px 16px;font-size:19px}
+.btn.go{background:var(--yes);color:var(--ink)}
+
+/* arena */
+.arena{display:flex;gap:14px;height:min(72vh,640px);min-height:420px}
+.monster-side{width:32%;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;position:relative}
+.say{background:var(--moon);color:var(--ink);border-radius:18px;padding:10px 16px;font-weight:800;font-size:19px;text-align:center;min-height:52px;display:flex;align-items:center;justify-content:center;max-width:100%}
+#monster{width:100%;max-width:300px;height:auto;overflow:visible}
+#monster .body{fill:var(--m-body)}#monster .dark{fill:var(--m-dark)}
+#monster .m-open,#monster .m-yuck,#monster .cheek-sick{display:none}
+#monster.open .m-open{display:inline}#monster.open .m-smile{display:none}
+#monster.yuck .m-yuck,#monster.yuck .cheek-sick{display:inline}#monster.yuck .m-smile{display:none}
+.bob{animation:bob 2.4s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes bob{50%{transform:translateY(-6px) scaleY(1.02)}}
+#monster.grow{animation:grow .6s ease-out}
+@keyframes grow{40%{transform:scale(1.15)}}
+.col{display:flex;flex-direction:column;gap:10px;align-items:center;width:100%}
+.dots{display:flex;gap:8px}
+.dot{width:24px;height:24px;border-radius:50%;background:var(--night-2);border:3px solid var(--soft)}
+.dot.on{background:var(--gold);border-color:var(--gold)}
+
+.field{flex:1;min-width:0;position:relative;overflow:hidden;border-radius:28px;
+  background:radial-gradient(circle at 85% 12%,rgba(255,246,214,.35) 0 34px,transparent 36px),
+  radial-gradient(1.5px 1.5px at 20% 20%,var(--moon),transparent),radial-gradient(1.5px 1.5px at 60% 10%,var(--moon),transparent),
+  radial-gradient(1.5px 1.5px at 40% 35%,var(--moon),transparent),radial-gradient(1.5px 1.5px at 75% 40%,var(--moon),transparent),
+  linear-gradient(var(--field),var(--night-2) 75%,var(--grass) 75.2%,var(--grass-dark))}
+.snack{position:absolute;left:0;top:0;width:128px;display:flex;flex-direction:column;align-items:center;gap:2px;background:transparent;padding:4px;will-change:transform}
+.snack .food{font-size:56px;line-height:1;filter:drop-shadow(0 4px 0 rgba(0,0,0,.3))}
+.snack .eq{background:var(--moon);color:var(--ink);font-family:var(--display);font-weight:800;font-size:28px;border-radius:14px;padding:0 12px;white-space:nowrap;box-shadow:0 4px 0 rgba(0,0,0,.3)}
+.snack.wrong .eq{background:var(--no);color:#fff}
+.snack.wrong{animation:shake .4s;opacity:.85}
+.snack.flying{position:fixed;z-index:30;transition:transform .45s cubic-bezier(.5,-0.2,.7,1),opacity .45s;pointer-events:none}
+@keyframes shake{25%{translate:-8px 0}75%{translate:8px 0}}
+.paused-note{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(31,26,56,.6);font-family:var(--display);font-weight:800;font-size:40px}
+
+/* menu & end */
+.panel{background:var(--night-2);border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:18px}
+.hero{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.hero h1{font-size:clamp(38px,6vw,64px);color:var(--gold)}
+.hero p{margin:6px 0 0;color:var(--soft);font-weight:800;font-size:19px;max-width:40ch}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.mode{border-radius:22px;padding:18px;text-align:left;background:var(--field);box-shadow:0 5px 0 rgba(0,0,0,.35);display:flex;flex-direction:column;gap:6px;min-height:118px}
+.mode:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+.mode h3{font-size:28px;color:var(--moon)}.mode p{margin:0;font-weight:800;color:var(--soft);font-size:16px}
+.mode .ex{font-family:var(--display);font-size:22px;color:var(--gold)}
+.center{text-align:center}
+.stats{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.stat{background:var(--field);border-radius:20px;padding:14px 22px;min-width:150px}
+.stat b{display:block;font-family:var(--display);font-size:44px;color:var(--gold);font-variant-numeric:tabular-nums}
+.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+@media (orientation:portrait),(max-width:700px){
+  .arena{flex-direction:column;height:auto;min-height:0}
+  .monster-side{width:100%;flex-direction:row;align-items:flex-end;justify-content:center;gap:12px}
+  #monster{max-width:190px;width:42%}
+  .monster-side .col{display:flex;flex-direction:column;gap:10px;align-items:center;flex:1;min-width:0}
+  .field{height:clamp(340px,52vh,620px);flex:none}
+}
+@media (max-width:500px){.snack{width:104px}.snack .food{font-size:44px}.snack .eq{font-size:23px}}
+@media (prefers-reduced-motion:reduce){.bob,#monster.grow,.snack.wrong{animation:none}}
+.hub{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px;padding:6px 16px;border-radius:18px;background:#ffffff;color:#2a2440;font-weight:700;font-size:19px;line-height:1;text-decoration:none;box-shadow:0 5px 0 rgba(0,0,0,.25);-webkit-touch-callout:none}
+.hub:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.hub.big{min-height:58px;padding:12px 22px;font-size:22px}
+@media (max-width:600px){.hub .hl{display:none}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <!-- MENU -->
+  <section id="menu" class="panel">
+    <a href="index.html" style="color:var(--soft);font-weight:800;text-decoration:none;align-self:flex-start;padding:6px 0">◀ All games</a>
+    <div class="hero">
+      <svg width="120" height="120" viewBox="0 0 200 220" aria-hidden="true"><use href="#monsterShape"/></svg>
+      <div>
+        <h1>Math Monster Feeder</h1>
+        <p>The monster only eats snacks that match the number on its belly. Tap the right snacks before they float past!</p>
+      </div>
+    </div>
+    <h2>Pick a game</h2>
+    <div class="modes">
+      <button class="mode" data-mode="add10"><h3>Adding to 10</h3><span class="ex">3 + 4</span><p>Small numbers, nice and easy.</p></button>
+      <button class="mode" data-mode="add20"><h3>Adding to 20</h3><span class="ex">8 + 7</span><p>Bigger sums for a bigger tummy.</p></button>
+      <button class="mode" data-mode="sub"><h3>Take Away</h3><span class="ex">9 − 3</span><p>Subtraction snacks.</p></button>
+      <button class="mode" data-mode="mix"><h3>Mixed Bag</h3><span class="ex">6 + 2 · 10 − 4</span><p>Adding and taking away together.</p></button>
+    </div>
+    <p class="center" style="margin:0;font-weight:800;color:var(--soft)">Best score: <span id="best">0</span> snacks</p>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" hidden>
+    <div class="wrap">
+      <div class="bar">
+        <a class="hub" href="index.html" aria-label="All games">🏠<span class="hl"> All games</span></a>
+        <button class="btn small" id="homeBtn">◀ Menu</button>
+        <button class="btn small" id="pauseBtn">Pause</button>
+        <div class="spacer"></div>
+        <div class="pill">Monster <span id="monNum">1</span>/5</div>
+        <div class="pill">🍪 <span id="score">0</span></div>
+      </div>
+      <div class="arena">
+        <div class="monster-side">
+          <svg id="monster" viewBox="0 0 200 220" aria-label="Hungry monster">
+            <g class="bob" id="monsterBody"><use href="#monsterShape"/></g>
+          </svg>
+          <div class="col">
+            <div class="say" id="say">Feed me snacks that make 8!</div>
+            <div class="dots" id="dots"></div>
+          </div>
+        </div>
+        <div class="field" id="field"><div class="paused-note" id="pausedNote" hidden>Paused</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DONE -->
+  <section id="done" class="panel center" hidden>
+    <h1 style="font-size:48px;color:var(--gold)">All the monsters are full!</h1>
+    <p style="font-weight:800;font-size:21px;margin:0">You fed 5 hungry monsters. Burp!</p>
+    <div class="stats">
+      <div class="stat"><b id="dScore">0</b>snacks eaten</div>
+      <div class="stat"><b id="dWrong">0</b>yucky taps</div>
+      <div class="stat"><b id="dBest">0</b>best score</div>
+    </div>
+    <div class="actions">
+      <button class="btn go" id="againBtn">Play again</button>
+      <button class="btn" id="menuBtn2">Pick another game</button>
+    <a class="hub big" href="index.html">🏠 All games</a>
+    </div>
+  </section>
+</div>
+
+<!-- shared monster drawing -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="monsterShape">
+      <path class="dark" d="M52 40 L40 6 L74 30Z M148 40 L160 6 L126 30Z" fill="#d0621e"/>
+      <ellipse class="body" cx="100" cy="120" rx="84" ry="92" fill="#ff8a3d"/>
+      <ellipse class="dark" cx="62" cy="208" rx="26" ry="12" fill="#d0621e"/>
+      <ellipse class="dark" cx="138" cy="208" rx="26" ry="12" fill="#d0621e"/>
+      <circle cx="70" cy="62" r="20" fill="#fff"/><circle cx="130" cy="62" r="20" fill="#fff"/>
+      <circle cx="74" cy="66" r="9" fill="#1f1a38"/><circle cx="126" cy="66" r="9" fill="#1f1a38"/>
+      <circle cx="77" cy="62" r="3" fill="#fff"/><circle cx="129" cy="62" r="3" fill="#fff"/>
+      <path class="m-smile" d="M66 96 Q100 124 134 96" stroke="#1f1a38" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <g class="m-open"><ellipse cx="100" cy="104" rx="36" ry="24" fill="#1f1a38"/><ellipse cx="100" cy="116" rx="18" ry="8" fill="#ff6f61"/><path d="M76 86 l6 10 l6-10 M112 86 l6 10 l6-10" fill="#fff"/></g>
+      <g class="m-yuck"><path d="M66 106 q8-10 17 0 q8 10 17 0 q8-10 17 0 q8 10 17 0" stroke="#1f1a38" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M104 110 q8 18 18 4" fill="#ff6f61"/></g>
+      <circle class="cheek-sick" cx="48" cy="92" r="12" fill="#7ed957" opacity=".8"/><circle class="cheek-sick" cx="152" cy="92" r="12" fill="#7ed957" opacity=".8"/>
+      <circle cx="100" cy="160" r="38" fill="#fff6d6"/>
+      <text class="belly" x="100" y="176" text-anchor="middle" font-family="Baloo 2, Nunito, sans-serif" font-weight="800" font-size="46" fill="#1f1a38">8</text>
+    </g>
+  </defs>
+</svg>
+
+<script>
+/* Game Time music: small built-in tunes, one per game, plus a shared sound on/off button. No audio files needed. */
+window.GT = (() => {
+  const KEY = 'gametime-sound';
+  let on = true;
+  try { on = localStorage.getItem(KEY) !== 'off' } catch(e){}
+  let ctx = null, master = null, musicBus = null, fxBus = null, noiseBuf = null;
+  let song = null, loop = null, step = 0, nextT = 0, timer = null, started = false, ducked = false, btn = null;
+
+  function ctxGet(){
+    if(!ctx){
+      try { if(navigator.audioSession) navigator.audioSession.type = 'playback' } catch(e){}
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      master = ctx.createGain(); master.gain.value = on ? 1 : 0; master.connect(ctx.destination);
+      musicBus = ctx.createGain(); musicBus.gain.value = .55; musicBus.connect(master);
+      fxBus = ctx.createGain(); fxBus.gain.value = 1; fxBus.connect(master);
+      noiseBuf = ctx.createBuffer(1, ctx.sampleRate * .5, ctx.sampleRate);
+      const d = noiseBuf.getChannelData(0); for(let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    }
+    if(ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+  const fx = () => { ctxGet(); return fxBus };
+
+  // ---------- songs ----------
+  const SCALES = { major:[0,2,4,5,7,9,11], minor:[0,2,3,5,7,8,10] };
+  const PENTA  = { major:[0,2,4,7,9],      minor:[0,3,5,7,10] };
+  const SONGS = {
+    coin:    {bpm:112, key:60, scale:'major', prog:[0,3,4,0,0,3,4,4], lead:'pluck',   bass:'bounce', arp:false, perc:'shaker', seed:3},
+    monster: {bpm:100, key:57, scale:'minor', prog:[0,5,2,6,0,5,3,4], lead:'pluck',   bass:'bounce', arp:false, perc:'tick',   seed:7},
+    word:    {bpm:90,  key:62, scale:'major', prog:[0,4,5,3,0,4,3,4], lead:'soft',    bass:'soft',   arp:true,  perc:null,     seed:11},
+    habitat: {bpm:108, key:65, scale:'major', prog:[0,3,0,4,0,3,4,0], lead:'marimba', bass:'bounce', arp:false, perc:'shaker', seed:5},
+    story:   {bpm:74,  key:67, scale:'major', prog:[0,5,3,4,0,5,3,4], lead:'bell',    bass:'soft',   arp:true,  perc:null,     seed:2},
+    pattern: {bpm:120, key:60, scale:'major', prog:[0,0,3,4,0,0,4,0], lead:'pluck',   bass:'walk',   arp:false, perc:'train',  seed:9},
+    paint:   {bpm:82,  key:64, scale:'major', prog:[0,3,5,4,0,3,4,4], lead:'soft',    bass:'soft',   arp:true,  perc:null,     seed:4},
+    bubble:  {bpm:104, key:65, scale:'major', prog:[0,4,3,4,0,4,3,0], lead:'bell',    bass:'bounce', arp:false, perc:'shaker', seed:8}
+  };
+
+  function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296 } }
+
+  function build(s){
+    const R = rng(s.seed), sc = SCALES[s.scale], pn = PENTA[s.scale];
+    const deg = d => s.key + sc[((d % 7) + 7) % 7] + 12 * Math.floor(d / 7);
+    const chord = d => [deg(d), deg(d + 2), deg(d + 4)];
+    const penta = []; for(let o = 0; o < 3; o++) pn.forEach(p => penta.push(s.key + p + 12 * o));
+    const lo = s.key + 7, hi = s.key + 24;
+    const RHY = [[1,0,1,0,1,0,1,1],[1,0,1,1,1,0,1,0],[1,0,0,1,1,0,1,0],[1,1,1,0,1,0,0,0],[1,0,1,0,1,1,1,0]];
+    const mel = new Array(64).fill(null), bass = new Array(64).fill(null), arp = new Array(64).fill(null);
+    let cur = s.key + 12;
+    function bar(b, cadence){
+      const ch = chord(s.prog[b]).map(n => n + 12), rh = RHY[Math.floor(R() * RHY.length)];
+      for(let i = 0; i < 8; i++){
+        const k = b * 8 + i;
+        if(cadence && i >= 4){ if(i === 4) mel[k] = s.key + 12; continue }
+        if(!rh[i]) continue;
+        if(i === 0 || i === 4){
+          const opts = ch.concat(ch.map(n => n + 12)).filter(n => n >= lo && n <= hi);
+          opts.sort((a, b2) => Math.abs(a - cur) - Math.abs(b2 - cur));
+          cur = opts[Math.min(opts.length - 1, Math.floor(R() * 2))];
+        } else {
+          let idx = penta.findIndex(n => n >= cur); if(idx < 0) idx = penta.length - 1;
+          idx += R() < .5 ? -1 : 1; if(R() < .25) idx += R() < .5 ? -1 : 1;
+          cur = Math.max(lo, Math.min(hi, penta[Math.max(0, Math.min(penta.length - 1, idx))]));
+        }
+        mel[k] = cur;
+      }
+    }
+    for(let b = 0; b < 4; b++) bar(b, false);
+    for(let k = 0; k < 24; k++) mel[32 + k] = mel[k];        // repeat the phrase
+    bar(7, true);                                             // new ending that lands home
+    for(let b = 0; b < 8; b++){
+      const r = deg(s.prog[b]) - 12, ch = chord(s.prog[b]);
+      const k = b * 8;
+      if(s.bass === 'soft') bass[k] = r;
+      else if(s.bass === 'walk'){ bass[k] = r; bass[k+2] = r + (ch[1]-ch[0]); bass[k+4] = r + 7; bass[k+6] = r + 12 }
+      else { bass[k] = r; bass[k+4] = r + 7 }
+      if(s.arp) for(let i = 0; i < 8; i++) arp[k + i] = [ch[0], ch[1], ch[2], ch[1]][i % 4];
+    }
+    return {mel, bass, arp};
+  }
+
+  // ---------- voices ----------
+  const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+  function osc(type, f, t, dur, vol, attack, partials){
+    const g = ctx.createGain(); g.connect(musicBus);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + attack);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    (partials || [[1, 1]]).forEach(([ratio, amp]) => {
+      const o = ctx.createOscillator(); o.type = type; o.frequency.value = f * ratio;
+      if(amp === 1) o.connect(g); else { const pg = ctx.createGain(); pg.gain.value = amp; o.connect(pg).connect(g) }
+      o.start(t); o.stop(t + dur + .05);
+    });
+  }
+  function lead(kind, m, t, len){
+    const f = mtof(m);
+    if(kind === 'bell')    osc('sine', f, t, 1.1, .11, .005, [[1,1],[2,.3],[3,.08]]);
+    else if(kind === 'marimba') osc('sine', f, t, .4, .14, .004, [[1,1],[4,.2]]);
+    else if(kind === 'soft') osc('sine', f, t, Math.max(.35, len * 1.1), .09, .05);
+    else osc('triangle', f, t, Math.min(.5, len * 1.4), .1, .005);
+  }
+  function perc(kind, i, t){
+    let vol = 0, len = .05, hp = 6000;
+    if(kind === 'shaker'){ vol = (i % 2 ? .025 : .04) }
+    else if(kind === 'tick'){ if(i === 2 || i === 6){ vol = .05 } }
+    else if(kind === 'train'){ vol = (i % 4 === 0) ? .07 : .035; len = .08; hp = 2500 }
+    if(!vol) return;
+    const src = ctx.createBufferSource(); src.buffer = noiseBuf;
+    const f = ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hp;
+    const g = ctx.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    src.connect(f).connect(g).connect(musicBus); src.start(t); src.stop(t + len + .02);
+  }
+  function playStep(k, t, spb){
+    if(loop.mel[k] != null){ let n = 1; while(n < 4 && loop.mel[(k + n) % 64] == null) n++; lead(song.lead, loop.mel[k], t, n * spb) }
+    if(loop.bass[k] != null) osc(song.bass === 'soft' ? 'sine' : 'triangle', mtof(loop.bass[k]), t, song.bass === 'soft' ? spb * 7 : spb * 1.8, song.bass === 'soft' ? .1 : .13, .01);
+    if(loop.arp[k] != null) osc('sine', mtof(loop.arp[k]), t, spb * 1.6, .035, .01);
+    if(song.perc) perc(song.perc, k % 8, t);
+  }
+
+  // ---------- transport ----------
+  function tick(){
+    if(!ctx || !on || document.hidden) return;
+    const spb = 60 / song.bpm / 2;
+    if(nextT < ctx.currentTime) nextT = ctx.currentTime + .05;
+    while(nextT < ctx.currentTime + .3){ playStep(step, nextT, spb); nextT += spb; step = (step + 1) % 64 }
+    const speaking = !!(window.speechSynthesis && speechSynthesis.speaking);
+    if(speaking !== ducked){ ducked = speaking; musicBus.gain.setTargetAtTime(speaking ? .12 : .55, ctx.currentTime, .15) }
+  }
+  function startMusic(){
+    if(!song || started) return;
+    ctxGet(); started = true; step = 0; nextT = ctx.currentTime + .1;
+    timer = setInterval(tick, 60);
+  }
+
+  function setOn(v){
+    on = v;
+    try { localStorage.setItem(KEY, v ? 'on' : 'off') } catch(e){}
+    if(v){ ctxGet(); master.gain.setTargetAtTime(1, ctx.currentTime, .05); startMusic(); nextT = ctx.currentTime + .1 }
+    else if(ctx){ master.gain.setTargetAtTime(0, ctx.currentTime, .05) }
+    paint();
+  }
+  function paint(){
+    if(!btn) return;
+    btn.textContent = on ? '🎵' : '🔇';
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    btn.setAttribute('aria-label', on ? 'Sound is on. Tap to turn it off.' : 'Sound is off. Tap to turn it on.');
+    btn.classList.toggle('off', !on);
+  }
+
+  function init(name){
+    song = SONGS[name] || SONGS.coin; loop = build(song);
+    const st = document.createElement('style');
+    st.textContent = '.gt-snd{position:fixed;z-index:60;right:calc(env(safe-area-inset-right,0px) + 14px);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);width:60px;height:60px;border-radius:50%;border:0;background:#ffffff;color:#2a2440;font-size:30px;line-height:1;box-shadow:0 5px 0 rgba(0,0,0,.28),0 0 0 3px rgba(42,36,64,.15);cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center;padding:0}' +
+      '.gt-snd:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.28)}.gt-snd.off{background:#e4e1ec}.gt-snd:focus-visible{outline:4px solid #2a2440;outline-offset:3px}';
+    document.head.append(st);
+    btn = document.createElement('button'); btn.className = 'gt-snd'; btn.type = 'button';
+    btn.addEventListener('click', ev => { ev.stopPropagation(); setOn(!on) });
+    document.body.append(btn); paint();
+    // browsers only allow sound after a tap, so start on the first one
+    const kick = ev => {
+      if(ev && ev.target === btn) return;
+      if(on){ ctxGet(); startMusic() }
+      if(ctx && ctx.state === 'running' && (started || !on)) ['pointerdown','touchend','click','keydown'].forEach(e => document.removeEventListener(e, kick, true));
+    };
+    ['pointerdown','touchend','click','keydown'].forEach(e => document.addEventListener(e, kick, true));
+    document.addEventListener('visibilitychange', () => { if(!ctx) return; if(document.hidden) ctx.suspend(); else if(on){ ctx.resume(); nextT = ctx.currentTime + .1 } });
+  }
+
+  return { init, ctx: ctxGet, fx, isOn: () => on, setOn };
+})();
+
+GT.init('monster');
+</script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const rand = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+  const pick = a => a[Math.floor(Math.random()*a.length)];
+  const FOODS = ['🍪','🍩','🍓','🥕','🍕','🧁','🍌','🍎','🥨','🍉','🌽','🍇','🥞','🍒'];
+  const MONSTERS = [
+    ['Munch','#ff8a3d','#d0621e'],['Gobble','#3ec7c2','#24918d'],['Nom','#f25c9a','#c23a73'],
+    ['Chomp','#9b7bff','#6f52d6'],['Yum-Yum','#8bd346','#5fa52a']
+  ];
+  const NEED = 4, ROUNDS = 5;
+  const MODES = {
+    add10:{targets:[3,10], ops:['+']},
+    add20:{targets:[8,20], ops:['+']},
+    sub:  {targets:[1,10], ops:['-']},
+    mix:  {targets:[3,12], ops:['+','-']}
+  };
+
+  // shared monster shape: belly text and colors live in the <use> source, so set them there
+  const shape = $('monsterShape');
+  function setMonsterLook(body, dark, num){
+    shape.querySelectorAll('.body').forEach(e => e.setAttribute('fill', body));
+    shape.querySelectorAll('.dark').forEach(e => e.setAttribute('fill', dark));
+    shape.querySelector('.belly').textContent = num;
+  }
+  // inline copy for the game so classes for mouth states work (use-shadow can't be styled by parent class)
+  const monsterBody = $('monsterBody');
+  monsterBody.innerHTML = shape.innerHTML;
+  const mon = $('monster');
+  function paintGameMonster(body, dark, num){
+    monsterBody.querySelectorAll('.body').forEach(e => e.setAttribute('fill', body));
+    monsterBody.querySelectorAll('.dark').forEach(e => e.setAttribute('fill', dark));
+    monsterBody.querySelector('.belly').textContent = num;
+  }
+
+  // storage
+  const best = {
+    get(){ try { return +localStorage.getItem('mathmonster-best') || 0 } catch(e){ return 0 } },
+    set(v){ try { localStorage.setItem('mathmonster-best', String(v)) } catch(e){} }
+  };
+  $('best').textContent = best.get();
+
+  // sound
+  let ac = null;
+  function audio(){ try { ac = ac || GT.ctx(); if(ac.state==='suspended') ac.resume() } catch(e){} }
+  function tone(f,t=.12,type='sine',when=0,vol=.18,slide){
+    if(!ac) return;
+    const o=ac.createOscillator(), g=ac.createGain(), s=ac.currentTime+when;
+    o.type=type; o.frequency.setValueAtTime(f,s); if(slide) o.frequency.exponentialRampToValueAtTime(slide,s+t);
+    g.gain.setValueAtTime(vol,s); g.gain.exponentialRampToValueAtTime(.001,s+t);
+    o.connect(g).connect(GT.fx()); o.start(s); o.stop(s+t+.02);
+  }
+  const sChomp = () => { tone(220,.08,'square',0,.1,120); tone(240,.08,'square',.12,.1,130); tone(880,.12,'triangle',.22,.12) };
+  const sYuck = () => tone(300,.35,'sawtooth',0,.08,110);
+  const sBurp = () => { tone(140,.5,'sawtooth',0,.12,70); [523,659,784,1047].forEach((f,i)=>tone(f,.16,'triangle',.5+i*.09)) };
+
+  // problems
+  function exprFor(value, ops){
+    const op = pick(ops);
+    if(op === '+'){
+      if(value <= 1) return {txt:`${value} + 0`, v:value};
+      const a = rand(1, value-1); return {txt:`${a} + ${value-a}`, v:value};
+    }
+    const b = rand(1, Math.min(9, 20 - value)); return {txt:`${value + b} − ${b}`, v:value};
+  }
+  function wrongValue(target, ops){
+    let v;
+    do { v = target + pick([-3,-2,-1,1,2,3]) } while(v < (ops.includes('+') && !ops.includes('-') ? 2 : 0) || v > 20);
+    return v;
+  }
+
+  // game state
+  let S = null, raf = 0, last = 0;
+  const field = $('field');
+
+  function start(mode){
+    audio();
+    S = {mode, round:1, target:0, fed:0, score:0, wrong:0, snacks:[], spawnIn:300, paused:false, lane:-1, sinceCorrect:0};
+    $('score').textContent = 0;
+    $('pausedNote').hidden = true; $('pauseBtn').textContent = 'Pause';
+    show('game');
+    newMonster();
+    last = performance.now();
+    cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
+  }
+
+  function newMonster(){
+    const [name, body, dark] = MONSTERS[(S.round-1) % MONSTERS.length];
+    const [lo, hi] = MODES[S.mode].targets;
+    let t; do { t = rand(lo, hi) } while(t === S.target);
+    S.target = t; S.fed = 0; S.name = name;
+    paintGameMonster(body, dark, t);
+    $('monNum').textContent = S.round;
+    say(`I'm ${name}! Feed me snacks that make ${t}!`);
+    renderDots();
+    // clear leftover snacks
+    S.snacks.forEach(s => s.el.remove()); S.snacks = []; S.spawnIn = 500;
+  }
+
+  function renderDots(){
+    $('dots').innerHTML = Array.from({length:NEED},(_,i)=>`<span class="dot${i<S.fed?' on':''}"></span>`).join('');
+  }
+  let sayTimer;
+  function say(msg, ms){
+    $('say').textContent = msg; clearTimeout(sayTimer);
+    if(ms) sayTimer = setTimeout(()=>{ if(S) $('say').textContent = `Feed me snacks that make ${S.target}!` }, ms);
+  }
+  let faceTimer;
+  function face(cls, ms){
+    mon.classList.remove('open','yuck'); void mon.offsetWidth;
+    if(cls) mon.classList.add(cls);
+    clearTimeout(faceTimer); faceTimer = setTimeout(()=>mon.classList.remove('open','yuck'), ms);
+  }
+
+  function speed(){ return 70 + (S.round-1)*12 }       // px per second
+  function spawnGap(){ return Math.max(950, 1750 - (S.round-1)*150) }
+
+  function spawn(){
+    const W = field.clientWidth, H = field.clientHeight;
+    const sw = window.innerWidth <= 500 ? 104 : 128, sh = 110;
+    const lanes = Math.max(2, Math.floor((H - 20) / (sh + 6)));
+    let lane; do { lane = rand(0, lanes-1) } while(lane === S.lane && lanes > 1);
+    // avoid stacking on a snack still near the right edge in the same lane
+    if(S.snacks.some(s => s.lane === lane && s.x > W - sw*1.3)) return false;
+    S.lane = lane;
+    const ops = MODES[S.mode].ops;
+    const hasCorrect = S.snacks.some(s => s.correct && !s.done);
+    const correct = !hasCorrect || S.sinceCorrect >= 2 || Math.random() < .45;
+    const e = correct ? exprFor(S.target, ops) : exprFor(wrongValue(S.target, ops), ops);
+    S.sinceCorrect = correct ? 0 : S.sinceCorrect + 1;
+    const el = document.createElement('button');
+    el.className = 'snack';
+    el.setAttribute('aria-label', e.txt.replace('−','minus'));
+    el.innerHTML = `<span class="food">${pick(FOODS)}</span><span class="eq">${e.txt}</span>`;
+    const gap = (H - lanes*sh) / (lanes + 1);
+    const s = {el, x:W + 10, y: gap + lane*(sh+gap), lane, correct, v:e.v, txt:e.txt, done:false, w:sw, wobble:Math.random()*6.28};
+    el.addEventListener('pointerdown', ev => { ev.preventDefault(); tap(s) });
+    el.addEventListener('keydown', ev => { if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); tap(s) } });
+    field.append(el); S.snacks.push(s); place(s);
+    return true;
+  }
+  function place(s){ s.el.style.transform = `translate(${s.x}px, ${s.y + Math.sin(s.wobble)*6}px)` }
+
+  function tick(now){
+    raf = requestAnimationFrame(tick);
+    const dt = Math.min(.05, (now - last)/1000); last = now;
+    if(!S || S.paused) return;
+    S.spawnIn -= dt*1000;
+    if(S.spawnIn <= 0 && S.snacks.filter(s=>!s.done).length < 6){ S.spawnIn = spawn() ? spawnGap() : 250 }
+    const v = speed();
+    for(const s of S.snacks){
+      if(s.done) continue;
+      s.x -= v*dt; s.wobble += dt*2.2; place(s);
+      if(s.x < -s.w - 10){ s.done = true; s.el.remove() }
+    }
+    S.snacks = S.snacks.filter(s => !(s.done && !s.el.isConnected));
+  }
+
+  function tap(s){
+    if(!S || S.paused || s.done || S.fed >= NEED) return;
+    audio();
+    if(s.correct){
+      s.done = true; S.fed++; S.score++;
+      $('score').textContent = S.score; renderDots();
+      // fly into mouth
+      const r = s.el.getBoundingClientRect(), m = mon.getBoundingClientRect();
+      const tx = m.left + m.width*.5 - r.width/2, ty = m.top + m.height*.42 - r.height/2;
+      s.el.classList.add('flying'); document.body.append(s.el);
+      s.el.style.left = 0; s.el.style.top = 0;
+      s.el.style.transform = `translate(${r.left}px, ${r.top}px)`;
+      void s.el.offsetWidth;
+      s.el.style.transform = `translate(${tx}px, ${ty}px) scale(.3)`; s.el.style.opacity = '0';
+      face('open', 500); sChomp();
+      setTimeout(()=>s.el.remove(), 500);
+      if(S.fed >= NEED){
+        say(`Burp! ${S.name} is full!`);
+        setTimeout(()=>{ mon.classList.remove('grow'); void mon.offsetWidth; mon.classList.add('grow'); sBurp() }, 450);
+        setTimeout(()=>{ if(!S) return; if(S.round >= ROUNDS) finish(); else { S.round++; newMonster() } }, 1800);
+      } else {
+        say(pick(['Yum!','Mmm, tasty!','Nom nom!','More please!']) + ` ${s.txt} = ${S.target}`, 1400);
+      }
+    } else {
+      s.done = true; S.wrong++;
+      s.el.classList.add('wrong');
+      s.el.querySelector('.eq').textContent = `${s.txt} = ${s.v}`;
+      face('yuck', 900); sYuck();
+      say(`Yuck! ${s.txt} = ${s.v}, not ${S.target}.`, 1800);
+      setTimeout(()=>{ s.el.style.transition='opacity .4s'; s.el.style.opacity='0' }, 700);
+      setTimeout(()=>s.el.remove(), 1150);
+    }
+  }
+
+  function setPaused(p){
+    if(!S) return;
+    S.paused = p; $('pausedNote').hidden = !p; $('pauseBtn').textContent = p ? 'Play' : 'Pause';
+    if(!p) last = performance.now();
+  }
+
+  function finish(){
+    const b = Math.max(best.get(), S.score); best.set(b);
+    $('dScore').textContent = S.score; $('dWrong').textContent = S.wrong; $('dBest').textContent = b; $('best').textContent = b;
+    S.snacks.forEach(s=>s.el.remove()); cancelAnimationFrame(raf);
+    show('done');
+  }
+
+  function show(id){ ['menu','game','done'].forEach(x => $(x).hidden = x !== id); window.scrollTo(0,0) }
+
+  document.querySelectorAll('.mode').forEach(b => b.addEventListener('click', () => start(b.dataset.mode)));
+  $('pauseBtn').addEventListener('click', () => setPaused(!S.paused));
+  $('homeBtn').addEventListener('click', () => { if(S){ S.snacks.forEach(s=>s.el.remove()); S = null } cancelAnimationFrame(raf); setPaused(false); show('menu') });
+  $('againBtn').addEventListener('click', () => start(S.mode));
+  $('menuBtn2').addEventListener('click', () => { S = null; show('menu') });
+  document.addEventListener('visibilitychange', () => { if(document.hidden && S && !S.paused) setPaused(true) });
+})();
+</script>
+
+</body>
+</html>

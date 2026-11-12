@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kali's Games">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<title>Kali's Games</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&display=swap">
+<style>
+:root{--bg:#2a2152;--ink:#1f1a38;--text:#fff8ee;--soft:#c9c0f0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--text);font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif;
+  padding:max(20px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
+  -webkit-user-select:none;user-select:none}
+.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:22px;align-items:center}
+h1{margin:0;text-align:center;line-height:0}
+.logo img{width:clamp(180px,30vw,260px);height:auto;border-radius:22%;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.sub{margin:-10px 0 0;color:var(--soft);font-size:20px;text-align:center}
+.games{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;width:100%}
+a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:170px;padding:20px 12px;border-radius:28px;text-decoration:none;color:var(--ink);background:var(--c);box-shadow:0 7px 0 rgba(0,0,0,.35);text-align:center}
+a span{font-size:72px;line-height:1}
+a b{font-size:25px;line-height:1.05}
+a small{font-size:15px;font-weight:600;opacity:.75}
+a:active{transform:translateY(6px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+a:focus-visible{outline:5px solid #fff;outline-offset:3px}
+@media (max-width:900px){.games{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:600px){.games{grid-template-columns:repeat(2,minmax(0,1fr))}a{min-height:140px}a span{font-size:56px}a b{font-size:21px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="logo"><img src="kalis-games-logo.png" alt="Kali's Games" width="400" height="400"></h1>
+  <p class="sub">Pick a game to play</p>
+  <div class="games">
+    <a href="coin-shop.html" style="--c:#bfe6ea"><span>🏪</span><b>Coin Shop</b><small>Money</small></a>
+    <a href="math-monster.html" style="--c:#ff8a3d"><span>👾</span><b>Math Monster</b><small>Adding &amp; taking away</small></a>
+    <a href="word-rocket.html" style="--c:#ffd166"><span>🚀</span><b>Word Rocket</b><small>Spelling</small></a>
+    <a href="habitat-sort.html" style="--c:#8fd19e"><span>🌍</span><b>Habitat Sort</b><small>Animals &amp; science</small></a>
+    <a href="story-maker.html" style="--c:#d7b8f5"><span>📖</span><b>Story Maker</b><small>Reading</small></a>
+    <a href="pattern-train.html" style="--c:#ff8f8f"><span>🚂</span><b>Pattern Train</b><small>Patterns &amp; logic</small></a>
+    <a href="paint-studio.html" style="--c:#ffc6e0"><span>🎨</span><b>Paint Studio</b><small>Just for fun</small></a>
+    <a href="bubble-pop.html" style="--c:#9fe3f2"><span>🫧</span><b>Bubble Pop</b><small>Counting</small></a>
+  </div>
+</div>
+</body>
+</html>

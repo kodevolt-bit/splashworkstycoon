@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<title>Pattern Train</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;800&display=swap">
+<style>
+/* Layout: a railway on a sunny hillside. The train runs across the middle, the cargo to choose sits on the platform below. */
+:root{
+  --sky:#ffe9b8; --hill:#a6d672; --hill-2:#86c058; --rail:#7a5a3a; --tie:#5c4128;
+  --car:#e5484d; --car-2:#3e7ee0; --car-3:#f2a33a; --car-4:#7a5ad8; --engine:#2f3a56; --engine-2:#1d2438;
+  --card:#fffaf0; --edge:#e0cfa6; --ink:#2b2a35; --soft:#6a6658; --go:#2ea65a; --go-dark:#21803f; --no:#d6453d;
+  --display:"Fredoka","Nunito","Trebuchet MS",system-ui,sans-serif;
+  --body:"Nunito","Trebuchet MS",system-ui,sans-serif;
+  color-scheme:light;
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:linear-gradient(var(--sky) 0 55%,var(--hill) 55% 80%,var(--hill-2) 80%);background-attachment:fixed;color:var(--ink);font-family:var(--body);font-size:18px;
+  padding:max(12px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
+  -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-text-size-adjust:100%;overflow-x:hidden}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible,a:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.05;text-wrap:balance}
+.wrap{max-width:1150px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.home{color:var(--soft);font-weight:800;text-decoration:none;align-self:flex-start;padding:6px 0}
+.btn{border-radius:18px;padding:12px 22px;font-family:var(--display);font-weight:600;font-size:22px;background:var(--go);color:#fff;box-shadow:0 5px 0 var(--go-dark);min-height:58px}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--go-dark)}
+.btn.small{min-height:48px;padding:6px 16px;font-size:19px}
+.btn.ghost{background:var(--card);color:var(--ink);box-shadow:0 5px 0 var(--edge)}
+.pill{background:var(--card);border-radius:999px;padding:6px 16px;font-family:var(--display);font-weight:600;font-size:21px;box-shadow:0 3px 0 var(--edge)}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.bar .sp{flex:1}
+.panel{background:var(--card);border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:18px;box-shadow:0 6px 0 var(--edge)}
+.hero{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.hero .big{font-size:84px;line-height:1}
+.hero h1{font-size:clamp(40px,6vw,64px);color:var(--car)}
+.hero p{margin:6px 0 0;color:var(--soft);font-weight:800;max-width:44ch}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.mode{border-radius:22px;padding:18px;text-align:left;background:var(--sky);box-shadow:0 5px 0 var(--edge);display:flex;flex-direction:column;gap:6px;min-height:130px}
+.mode:active{transform:translateY(4px);box-shadow:0 1px 0 var(--edge)}
+.mode h3{font-size:28px}.mode p{margin:0;color:var(--soft);font-weight:800;font-size:16px}.mode .ex{font-size:26px;letter-spacing:2px}
+
+/* train */
+.prompt{font-family:var(--display);font-weight:600;font-size:28px;text-align:center}
+.track{position:relative;overflow:hidden;padding:10px 0 34px}
+.rails{position:absolute;left:0;right:0;bottom:12px;height:16px;background:repeating-linear-gradient(90deg,var(--tie) 0 10px,transparent 10px 34px);border-top:5px solid var(--rail);border-bottom:5px solid var(--rail)}
+.train{display:flex;align-items:flex-end;gap:6px;width:max-content;margin:0 auto;position:relative;transition:transform 1.1s ease-in}
+.train.leave{transform:translateX(120vw)}
+.train.arrive{transform:translateX(-120vw);transition:none}
+.car{width:var(--c,84px);height:calc(var(--c,84px)*.92);background:var(--cc,var(--car));border-radius:12px 12px 6px 6px;display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:14px;box-shadow:inset 0 -8px 0 rgba(0,0,0,.18)}
+.car::before,.car::after{content:"";position:absolute;bottom:-14px;width:22px;height:22px;border-radius:50%;background:var(--engine-2);border:4px solid #8d93a8}
+.car::before{left:8px}.car::after{right:8px}
+.load{width:78%;height:72%;background:var(--card);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:calc(var(--c,84px)*.5);line-height:1;font-family:var(--display);font-weight:700;color:var(--ink);text-align:center;word-break:break-all}
+.load.num{font-size:calc(var(--c,84px)*.38)}
+.load.dots{font-size:calc(var(--c,84px)*.16);line-height:1.05;padding:3px}
+.car.mystery .load{background:transparent;border:4px dashed var(--card);color:var(--card);font-size:calc(var(--c,84px)*.45)}
+.car.filled .load{animation:pop .3s ease-out}
+.car.shake{animation:shake .4s}
+@keyframes pop{from{transform:scale(.3)}}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.engine{width:calc(var(--c,84px)*1.35);height:calc(var(--c,84px)*1.2);position:relative;margin-bottom:14px;flex:none}
+.engine .cab{position:absolute;left:0;bottom:0;width:48%;height:100%;background:var(--engine);border-radius:10px 10px 6px 6px}
+.engine .cab::after{content:"";position:absolute;left:18%;top:14%;width:64%;height:30%;background:#bfe3ff;border-radius:6px}
+.engine .boiler{position:absolute;left:44%;bottom:0;width:56%;height:62%;background:var(--car);border-radius:6px 40px 6px 6px;box-shadow:inset 0 -8px 0 rgba(0,0,0,.18)}
+.engine .stack{position:absolute;left:70%;bottom:60%;width:16%;height:30%;background:var(--engine-2);border-radius:4px 4px 0 0}
+.engine::before,.engine::after{content:"";position:absolute;bottom:-14px;width:26px;height:26px;border-radius:50%;background:var(--engine-2);border:4px solid #8d93a8}
+.engine::before{left:10%}.engine::after{right:10%}
+.puff{position:absolute;left:66%;bottom:95%;font-size:28px;opacity:0}
+.train.leave .puff{animation:puff .5s linear infinite}
+@keyframes puff{0%{opacity:.9;transform:translate(0,0) scale(.6)}100%{opacity:0;transform:translate(-30px,-40px) scale(1.4)}}
+
+.platform{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
+.opt{width:118px;height:118px;border-radius:24px;background:var(--card);box-shadow:0 6px 0 var(--edge);font-size:62px;line-height:1;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700}
+.opt.num{font-size:44px}
+.opt.dots{font-size:20px;line-height:1.05;padding:8px;word-break:break-all}
+.opt:active{transform:translateY(5px);box-shadow:0 1px 0 var(--edge)}
+.opt.wrong{opacity:.35;animation:shake .4s}
+.msg{min-height:34px;text-align:center;font-family:var(--display);font-weight:600;font-size:24px}
+.msg.good{color:var(--go-dark)}.msg.bad{color:var(--no)}
+.stars{font-size:40px;letter-spacing:3px;text-align:center}
+@media (max-width:600px){.opt{width:88px;height:88px;font-size:46px}.opt.num{font-size:34px}.prompt{font-size:22px}}
+@media (prefers-reduced-motion:reduce){.train{transition:none}*{animation:none!important}}
+.hub{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:48px;padding:6px 16px;border-radius:18px;background:#ffffff;color:#2a2440;font-weight:700;font-size:19px;line-height:1;text-decoration:none;box-shadow:0 5px 0 rgba(0,0,0,.25);-webkit-touch-callout:none}
+.hub:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.hub.big{min-height:58px;padding:12px 22px;font-size:22px}
+@media (max-width:600px){.hub .hl{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section id="menu" class="panel">
+  <a class="home" href="index.html">◀ All games</a>
+  <div class="hero">
+    <div class="big" aria-hidden="true">🚂</div>
+    <div>
+      <h1>Pattern Train</h1>
+      <p>Look at the pattern on the train. What comes next? Tap it to load the last car, and the train chugs away!</p>
+    </div>
+  </div>
+  <h2>Pick a track</h2>
+  <div class="modes">
+    <button class="mode" data-level="easy"><span class="ex">🔴🔵🔴🔵❓</span><h3>Easy</h3><p>Simple patterns like red, blue, red, blue.</p></button>
+    <button class="mode" data-level="medium"><span class="ex">🍎🍌🍇🍎🍌❓</span><h3>Medium</h3><p>Longer patterns with three things.</p></button>
+    <button class="mode" data-level="hard"><span class="ex">2 4 6 8 ❓</span><h3>Hard</h3><p>Tricky patterns and counting by 2s, 5s and 10s.</p></button>
+  </div>
+</section>
+
+<section id="game" hidden>
+  <div class="wrap">
+    <div class="bar">
+      <a class="hub" href="index.html" aria-label="All games">🏠<span class="hl"> All games</span></a>
+        <button class="btn small ghost" id="homeBtn">◀ Menu</button>
+      <div class="sp"></div>
+      <div class="pill">Train <span id="num">1</span>/10</div>
+      <div class="pill">⭐ <span id="stars">0</span></div>
+    </div>
+    <div class="prompt">What comes next?</div>
+    <div class="track" id="track"><div class="rails"></div><div class="train" id="train"></div></div>
+    <div class="msg" id="msg" role="status"></div>
+    <div class="platform" id="platform"></div>
+  </div>
+</section>
+
+<section id="done" class="panel" hidden style="align-items:center;text-align:center">
+  <div style="font-size:84px;line-height:1" aria-hidden="true">🚉</div>
+  <h1 style="font-size:46px;color:var(--car)">All trains loaded!</h1>
+  <p style="font-weight:800;font-size:21px;margin:0">You solved 10 patterns and got <span id="dStars">0</span> right on the first try.</p>
+  <div class="stars" id="dRow"></div>
+  <div class="bar" style="justify-content:center">
+    <button class="btn" id="againBtn">Play again</button>
+    <button class="btn ghost" id="menuBtn">Pick another track</button>
+    <a class="hub big" href="index.html">🏠 All games</a>
+  </div>
+</section>
+
+</div>
+<script>
+/* Game Time music: small built-in tunes, one per game, plus a shared sound on/off button. No audio files needed. */
+window.GT = (() => {
+  const KEY = 'gametime-sound';
+  let on = true;
+  try { on = localStorage.getItem(KEY) !== 'off' } catch(e){}
+  let ctx = null, master = null, musicBus = null, fxBus = null, noiseBuf = null;
+  let song = null, loop = null, step = 0, nextT = 0, timer = null, started = false, ducked = false, btn = null;
+
+  function ctxGet(){
+    if(!ctx){
+      try { if(navigator.audioSession) navigator.audioSession.type = 'playback' } catch(e){}
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      master = ctx.createGain(); master.gain.value = on ? 1 : 0; master.connect(ctx.destination);
+      musicBus = ctx.createGain(); musicBus.gain.value = .55; musicBus.connect(master);
+      fxBus = ctx.createGain(); fxBus.gain.value = 1; fxBus.connect(master);
+      noiseBuf = ctx.createBuffer(1, ctx.sampleRate * .5, ctx.sampleRate);
+      const d = noiseBuf.getChannelData(0); for(let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    }
+    if(ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+  const fx = () => { ctxGet(); return fxBus };
+
+  // ---------- songs ----------
+  const SCALES = { major:[0,2,4,5,7,9,11], minor:[0,2,3,5,7,8,10] };
+  const PENTA  = { major:[0,2,4,7,9],      minor:[0,3,5,7,10] };
+  const SONGS = {
+    coin:    {bpm:112, key:60, scale:'major', prog:[0,3,4,0,0,3,4,4], lead:'pluck',   bass:'bounce', arp:false, perc:'shaker', seed:3},
+    monster: {bpm:100, key:57, scale:'minor', prog:[0,5,2,6,0,5,3,4], lead:'pluck',   bass:'bounce', arp:false, perc:'tick',   seed:7},
+    word:    {bpm:90,  key:62, scale:'major', prog:[0,4,5,3,0,4,3,4], lead:'soft',    bass:'soft',   arp:true,  perc:null,     seed:11},
+    habitat: {bpm:108, key:65, scale:'major', prog:[0,3,0,4,0,3,4,0], lead:'marimba', bass:'bounce', arp:false, perc:'shaker', seed:5},
+    story:   {bpm:74,  key:67, scale:'major', prog:[0,5,3,4,0,5,3,4], lead:'bell',    bass:'soft',   arp:true,  perc:null,     seed:2},
+    pattern: {bpm:120, key:60, scale:'major', prog:[0,0,3,4,0,0,4,0], lead:'pluck',   bass:'walk',   arp:false, perc:'train',  seed:9},
+    paint:   {bpm:82,  key:64, scale:'major', prog:[0,3,5,4,0,3,4,4], lead:'soft',    bass:'soft',   arp:true,  perc:null,     seed:4},
+    bubble:  {bpm:104, key:65, scale:'major', prog:[0,4,3,4,0,4,3,0], lead:'bell',    bass:'bounce', arp:false, perc:'shaker', seed:8}
+  };
+
+  function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296 } }
+
+  function build(s){
+    const R = rng(s.seed), sc = SCALES[s.scale], pn = PENTA[s.scale];
+    const deg = d => s.key + sc[((d % 7) + 7) % 7] + 12 * Math.floor(d / 7);
+    const chord = d => [deg(d), deg(d + 2), deg(d + 4)];
+    const penta = []; for(let o = 0; o < 3; o++) pn.forEach(p => penta.push(s.key + p + 12 * o));
+    const lo = s.key + 7, hi = s.key + 24;
+    const RHY = [[1,0,1,0,1,0,1,1],[1,0,1,1,1,0,1,0],[1,0,0,1,1,0,1,0],[1,1,1,0,1,0,0,0],[1,0,1,0,1,1,1,0]];
+    const mel = new Array(64).fill(null), bass = new Array(64).fill(null), arp = new Array(64).fill(null);
+    let cur = s.key + 12;
+    function bar(b, cadence){
+      const ch = chord(s.prog[b]).map(n => n + 12), rh = RHY[Math.floor(R() * RHY.length)];
+      for(let i = 0; i < 8; i++){
+        const k = b * 8 + i;
+        if(cadence && i >= 4){ if(i === 4) mel[k] = s.key + 12; continue }
+        if(!rh[i]) continue;
+        if(i === 0 || i === 4){
+          const opts = ch.concat(ch.map(n => n + 12)).filter(n => n >= lo && n <= hi);
+          opts.sort((a, b2) => Math.abs(a - cur) - Math.abs(b2 - cur));
+          cur = opts[Math.min(opts.length - 1, Math.floor(R() * 2))];
+        } else {
+          let idx = penta.findIndex(n => n >= cur); if(idx < 0) idx = penta.length - 1;
+          idx += R() < .5 ? -1 : 1; if(R() < .25) idx += R() < .5 ? -1 : 1;
+          cur = Math.max(lo, Math.min(hi, penta[Math.max(0, Math.min(penta.length - 1, idx))]));
+        }
+        mel[k] = cur;
+      }
+    }
+    for(let b = 0; b < 4; b++) bar(b, false);
+    for(let k = 0; k < 24; k++) mel[32 + k] = mel[k];        // repeat the phrase
+    bar(7, true);                                             // new ending that lands home
+    for(let b = 0; b < 8; b++){
+      const r = deg(s.prog[b]) - 12, ch = chord(s.prog[b]);
+      const k = b * 8;
+      if(s.bass === 'soft') bass[k] = r;
+      else if(s.bass === 'walk'){ bass[k] = r; bass[k+2] = r + (ch[1]-ch[0]); bass[k+4] = r + 7; bass[k+6] = r + 12 }
+      else { bass[k] = r; bass[k+4] = r + 7 }
+      if(s.arp) for(let i = 0; i < 8; i++) arp[k + i] = [ch[0], ch[1], ch[2], ch[1]][i % 4];
+    }
+    return {mel, bass, arp};
+  }
+
+  // ---------- voices ----------
+  const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+  function osc(type, f, t, dur, vol, attack, partials){
+    const g = ctx.createGain(); g.connect(musicBus);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + attack);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    (partials || [[1, 1]]).forEach(([ratio, amp]) => {
+      const o = ctx.createOscillator(); o.type = type; o.frequency.value = f * ratio;
+      if(amp === 1) o.connect(g); else { const pg = ctx.createGain(); pg.gain.value = amp; o.connect(pg).connect(g) }
+      o.start(t); o.stop(t + dur + .05);
+    });
+  }
+  function lead(kind, m, t, len){
+    const f = mtof(m);
+    if(kind === 'bell')    osc('sine', f, t, 1.1, .11, .005, [[1,1],[2,.3],[3,.08]]);
+    else if(kind === 'marimba') osc('sine', f, t, .4, .14, .004, [[1,1],[4,.2]]);
+    else if(kind === 'soft') osc('sine', f, t, Math.max(.35, len * 1.1), .09, .05);
+    else osc('triangle', f, t, Math.min(.5, len * 1.4), .1, .005);
+  }
+  function perc(kind, i, t){
+    let vol = 0, len = .05, hp = 6000;
+    if(kind === 'shaker'){ vol = (i % 2 ? .025 : .04) }
+    else if(kind === 'tick'){ if(i === 2 || i === 6){ vol = .05 } }
+    else if(kind === 'train'){ vol = (i % 4 === 0) ? .07 : .035; len = .08; hp = 2500 }
+    if(!vol) return;
+    const src = ctx.createBufferSource(); src.buffer = noiseBuf;
+    const f = ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hp;
+    const g = ctx.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    src.connect(f).connect(g).connect(musicBus); src.start(t); src.stop(t + len + .02);
+  }
+  function playStep(k, t, spb){
+    if(loop.mel[k] != null){ let n = 1; while(n < 4 && loop.mel[(k + n) % 64] == null) n++; lead(song.lead, loop.mel[k], t, n * spb) }
+    if(loop.bass[k] != null) osc(song.bass === 'soft' ? 'sine' : 'triangle', mtof(loop.bass[k]), t, song.bass === 'soft' ? spb * 7 : spb * 1.8, song.bass === 'soft' ? .1 : .13, .01);
+    if(loop.arp[k] != null) osc('sine', mtof(loop.arp[k]), t, spb * 1.6, .035, .01);
+    if(song.perc) perc(song.perc, k % 8, t);
+  }
+
+  // ---------- transport ----------
+  function tick(){
+    if(!ctx || !on || document.hidden) return;
+    const spb = 60 / song.bpm / 2;
+    if(nextT < ctx.currentTime) nextT = ctx.currentTime + .05;
+    while(nextT < ctx.currentTime + .3){ playStep(step, nextT, spb); nextT += spb; step = (step + 1) % 64 }
+    const speaking = !!(window.speechSynthesis && speechSynthesis.speaking);
+    if(speaking !== ducked){ ducked = speaking; musicBus.gain.setTargetAtTime(speaking ? .12 : .55, ctx.currentTime, .15) }
+  }
+  function startMusic(){
+    if(!song || started) return;
+    ctxGet(); started = true; step = 0; nextT = ctx.currentTime + .1;
+    timer = setInterval(tick, 60);
+  }
+
+  function setOn(v){
+    on = v;
+    try { localStorage.setItem(KEY, v ? 'on' : 'off') } catch(e){}
+    if(v){ ctxGet(); master.gain.setTargetAtTime(1, ctx.currentTime, .05); startMusic(); nextT = ctx.currentTime + .1 }
+    else if(ctx){ master.gain.setTargetAtTime(0, ctx.currentTime, .05) }
+    paint();
+  }
+  function paint(){
+    if(!btn) return;
+    btn.textContent = on ? '🎵' : '🔇';
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    btn.setAttribute('aria-label', on ? 'Sound is on. Tap to turn it off.' : 'Sound is off. Tap to turn it on.');
+    btn.classList.toggle('off', !on);
+  }
+
+  function init(name){
+    song = SONGS[name] || SONGS.coin; loop = build(song);
+    const st = document.createElement('style');
+    st.textContent = '.gt-snd{position:fixed;z-index:60;right:calc(env(safe-area-inset-right,0px) + 14px);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);width:60px;height:60px;border-radius:50%;border:0;background:#ffffff;color:#2a2440;font-size:30px;line-height:1;box-shadow:0 5px 0 rgba(0,0,0,.28),0 0 0 3px rgba(42,36,64,.15);cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center;padding:0}' +
+      '.gt-snd:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.28)}.gt-snd.off{background:#e4e1ec}.gt-snd:focus-visible{outline:4px solid #2a2440;outline-offset:3px}';
+    document.head.append(st);
+    btn = document.createElement('button'); btn.className = 'gt-snd'; btn.type = 'button';
+    btn.addEventListener('click', ev => { ev.stopPropagation(); setOn(!on) });
+    document.body.append(btn); paint();
+    // browsers only allow sound after a tap, so start on the first one
+    const kick = ev => {
+      if(ev && ev.target === btn) return;
+      if(on){ ctxGet(); startMusic() }
+      if(ctx && ctx.state === 'running' && (started || !on)) ['pointerdown','touchend','click','keydown'].forEach(e => document.removeEventListener(e, kick, true));
+    };
+    ['pointerdown','touchend','click','keydown'].forEach(e => document.addEventListener(e, kick, true));
+    document.addEventListener('visibilitychange', () => { if(!ctx) return; if(document.hidden) ctx.suspend(); else if(on){ ctx.resume(); nextT = ctx.currentTime + .1 } });
+  }
+
+  return { init, ctx: ctxGet, fx, isOn: () => on, setOn };
+})();
+
+GT.init('pattern');
+</script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const rand = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+  const pick = a => a[Math.floor(Math.random()*a.length)];
+  const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a };
+
+  const SETS = [
+    ['🔴','🔵','🟢','🟡','🟣','🟠'],
+    ['🍎','🍌','🍇','🍊','🍓','🍐'],
+    ['🐶','🐱','🐰','🐸','🐷','🐵'],
+    ['⭐','❤️','🌙','☀️','⚡','🌸'],
+    ['🚗','🚌','🚲','✈️','🚀','⛵']
+  ];
+  const UNITS = {
+    easy:   ['AB','AB','AAB','ABB'],
+    medium: ['ABC','ABC','AABB','AAB','ABB','ABCB'],
+    hard:   ['ABCD','AABC','ABBC','ABAC','skip','skip','grow']
+  };
+  const CAR_COLORS = ['var(--car)','var(--car-2)','var(--car-3)','var(--car-4)'];
+  const CHEERS = ['Choo choo!','All aboard!','You got it!','Great pattern spotting!','Toot toot!'];
+
+  let ac=null;
+  function audio(){ try{ ac = ac || GT.ctx(); if(ac.state==='suspended') ac.resume() }catch(e){} }
+  function tone(f,t=.12,type='sine',when=0,vol=.16,slide){ if(!ac) return; const o=ac.createOscillator(),g=ac.createGain(),s=ac.currentTime+when; o.type=type; o.frequency.setValueAtTime(f,s); if(slide) o.frequency.exponentialRampToValueAtTime(slide,s+t); g.gain.setValueAtTime(vol,s); g.gain.exponentialRampToValueAtTime(.001,s+t); o.connect(g).connect(GT.fx()); o.start(s); o.stop(s+t+.02) }
+  const sToot = () => { tone(587,.25,'square',0,.07); tone(740,.25,'square',0,.05); tone(587,.35,'square',.32,.07); tone(740,.35,'square',.32,.05) };
+  const sChug = () => { for(let i=0;i<6;i++) tone(90,.08,'sawtooth',.15*i,.05,60) };
+  const sOops = () => tone(280,.28,'sawtooth',0,.07,160);
+
+  let S = null;
+
+  function makePuzzle(level){
+    const unit = pick(UNITS[level]);
+    if(unit === 'skip'){
+      const step = pick([2,5,10]); const start = step * rand(1,3); const len = 5;
+      const seq = Array.from({length:len}, (_,i) => start + step*i);
+      const ans = seq[len-1];
+      const opts = shuffle([ans, ans+step, ans-1, ans+1].filter((v,i,a)=>a.indexOf(v)===i)).slice(0,4);
+      if(!opts.includes(ans)) opts[0] = ans;
+      return {kind:'num', items:seq.map(String), answer:String(ans), options:shuffle(opts.map(String)), hint:`Count by ${step}s!`};
+    }
+    if(unit === 'grow'){
+      const start = rand(1,2); const len = 4;
+      const seq = Array.from({length:len}, (_,i) => '●'.repeat(start+i));
+      const ans = seq[len-1];
+      const opts = shuffle([ans, '●'.repeat(start+len-2), '●'.repeat(start+len), '●'.repeat(Math.max(1,start+len-3))].filter((v,i,a)=>a.indexOf(v)===i));
+      return {kind:'dots', items:seq, answer:ans, options:opts, hint:'Each car gets one more dot.'};
+    }
+    const letters = [...new Set(unit.split(''))];
+    const set = shuffle(pick(SETS));
+    const map = {}; letters.forEach((L,i) => map[L] = set[i]);
+    const u = unit.split('').map(L => map[L]);
+    const extra = rand(1, u.length);
+    const len = Math.min(u.length*2 + extra, 10);
+    const seq = Array.from({length:len}, (_,i) => u[i % u.length]);
+    const ans = seq[len-1];
+    const nOpts = level === 'easy' ? 3 : 4;
+    const others = shuffle(set.filter(x => x !== ans));
+    // include other pattern items as tempting choices
+    const inPattern = others.filter(x => u.includes(x));
+    const outside = others.filter(x => !u.includes(x));
+    const opts = [ans, ...inPattern, ...outside].slice(0, nOpts);
+    return {kind:'emoji', items:seq, answer:ans, options:shuffle(opts), hint:'Say the pattern out loud!'};
+  }
+
+  function start(level){
+    audio();
+    S = {level, n:0, stars:0};
+    $('stars').textContent = 0;
+    show('game'); nextTrain(true);
+  }
+
+  function carSize(count){
+    const w = $('track').clientWidth;
+    return Math.max(44, Math.min(96, Math.floor((w - 20) / (count + 1.45) - 6)));
+  }
+
+  function nextTrain(first){
+    S.n++;
+    if(S.n > 10) return finish();
+    S.p = makePuzzle(S.level); S.clean = true; S.busy = false;
+    $('num').textContent = S.n; $('msg').textContent = ''; $('msg').className = 'msg';
+    const p = S.p, train = $('train');
+    train.style.setProperty('--c', carSize(p.items.length) + 'px');
+    train.className = 'train arrive';
+    const colorFor = i => CAR_COLORS[i % CAR_COLORS.length];
+    train.innerHTML = p.items.map((it, i) => {
+      const last = i === p.items.length - 1;
+      return `<div class="car${last ? ' mystery' : ''}" style="--cc:${colorFor(i)}"><div class="load ${p.kind==='num'?'num':p.kind==='dots'?'dots':''}">${last ? '?' : it}</div></div>`;
+    }).join('') + '<div class="engine" aria-hidden="true"><div class="cab"></div><div class="boiler"></div><div class="stack"></div><span class="puff">💨</span></div>';
+    train.setAttribute('aria-label', 'Train pattern: ' + p.items.slice(0,-1).join(', ') + ', then what?');
+    void train.offsetWidth;
+    train.style.transition = 'transform .9s cubic-bezier(.2,.8,.3,1)';
+    train.className = 'train';
+    setTimeout(() => train.style.transition = '', 950);
+    if(!first) sChug();
+    $('platform').innerHTML = '';
+    p.options.forEach(o => {
+      const b = document.createElement('button');
+      b.className = 'opt' + (p.kind==='num' ? ' num' : p.kind==='dots' ? ' dots' : '');
+      b.textContent = o; b.setAttribute('aria-label', p.kind==='dots' ? o.length + ' dots' : o);
+      b.addEventListener('click', () => answer(o, b));
+      $('platform').append(b);
+    });
+  }
+
+  function answer(o, b){
+    if(S.busy || b.classList.contains('wrong')) return;
+    audio();
+    const cars = $('train').querySelectorAll('.car'); const last = cars[cars.length-1];
+    if(o === S.p.answer){
+      S.busy = true;
+      if(S.clean){ S.stars++; $('stars').textContent = S.stars }
+      last.classList.remove('mystery'); last.classList.add('filled'); last.querySelector('.load').textContent = o;
+      $('msg').className = 'msg good'; $('msg').textContent = pick(CHEERS) + (S.clean ? ' ⭐' : '');
+      sToot();
+      setTimeout(() => { $('train').className = 'train leave'; sChug() }, 700);
+      setTimeout(() => nextTrain(false), 1900);
+    } else {
+      S.clean = false; sOops();
+      b.classList.add('wrong');
+      last.classList.remove('shake'); void last.offsetWidth; last.classList.add('shake');
+      $('msg').className = 'msg bad'; $('msg').textContent = 'Not that one. ' + S.p.hint;
+    }
+  }
+
+  function finish(){
+    $('dStars').textContent = S.stars;
+    $('dRow').textContent = '⭐'.repeat(S.stars) + '☆'.repeat(10 - S.stars);
+    show('done'); sToot();
+  }
+
+  function show(id){ ['menu','game','done'].forEach(x => $(x).hidden = x !== id); window.scrollTo(0,0) }
+
+  document.querySelectorAll('.mode').forEach(b => b.addEventListener('click', () => start(b.dataset.level)));
+  $('homeBtn').addEventListener('click', () => show('menu'));
+  $('againBtn').addEventListener('click', () => start(S.level));
+  $('menuBtn').addEventListener('click', () => show('menu'));
+  window.addEventListener('resize', () => { if(S && S.p && !$('game').hidden) $('train').style.setProperty('--c', carSize(S.p.items.length) + 'px') });
+})();
+</script>
+</body>
+</html>
