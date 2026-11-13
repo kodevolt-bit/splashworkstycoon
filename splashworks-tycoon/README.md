@@ -15,11 +15,11 @@ Reach **150 guests in the park at once** with a **park rating of 600** by **day 
 
 ## What you can build
 
-**Pools & Slides:** Splash Pad, Lazy River, Wave Pool, Body Slide, Tube Twister, Freefall Drop, Kiddie Pool, Splash Fort, Lily Pad Walk, Diving Pool, Whitewater Rapids, Whirlpool Bowl, Boomerang Wall, Mat Racer, Surf Rider and Water Coaster.
+**Pools & Slides:** Splash Pad, Lazy River, Wave Pool, Body Slide, Tube Twister, Freefall Drop, Kiddie Pool, Splash Fort, Lily Pad Walk, Diving Pool, Whitewater Rapids, Whirlpool Bowl, Boomerang Wall, Mat Racer, Surf Rider, Water Coaster, Aqua Loop, Family Raft Ride, Twin Racers, Bumper Boats, Splash Zip Line and Pirate Splash Ship.
 
 **Slide Designer:** design your own slide square by square. You pick the tower, route, height, color and name, and the game works out its thrill rating, cost and upkeep.
 
-**Food & Drink:** Snack Shack, Smoothie Hut, Ice Cream Cart, Pizza Oven, Taco Truck, Lemonade Stand, Shave Ice Shack and Funnel Cake Stand.
+**Food & Drink:** Snack Shack, Smoothie Hut, Ice Cream Cart, Pizza Oven, Taco Truck, Lemonade Stand, Shave Ice Shack and Funnel Cake Stand, plus sit-down restaurants with patio seating: Sushi Bar, Burger Grill, Noodle House and Smokehouse BBQ.
 
 **Facilities:** Restrooms, Sunscreen Stand, Sun Loungers, Locker Room, First Aid, Cabanas, Outdoor Showers and ATM.
 
@@ -44,6 +44,7 @@ Reach **150 guests in the park at once** with a **park rating of 600** by **day 
 |---|---|---|
 | Pan | Drag, right-drag, or arrow keys / WASD | Drag (two fingers while placing paths) |
 | Zoom | Scroll wheel or `+` / `-` | Pinch |
+| Browse the build menu | Scroll wheel or the arrow buttons | Swipe the row of cards |
 | Place | Click (drag for paths and scenery) | Tap to preview, tap again to build |
 | Rotate before placing | `R` or the Rotate button | Rotate button |
 | Stop building | `Esc` | Select tool |
