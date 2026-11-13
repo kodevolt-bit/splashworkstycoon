@@ -59,6 +59,8 @@ button:focus-visible{outline:3px solid var(--lagoon);outline-offset:2px}
 .speed{display:flex;gap:4px;margin-left:auto;padding-bottom:4px}
 .speed button{width:38px;height:34px;border:2px solid var(--ink);border-radius:10px;background:var(--paper);box-shadow:0 3px 0 var(--ink);cursor:pointer;font-weight:900;font-size:13px;display:grid;place-items:center}
 .speed button[aria-pressed="true"]{background:var(--sun)}
+.speed.snd{margin-left:auto}.speed.snd+.speed{margin-left:0}
+#musicBtn[aria-pressed="false"]{background:var(--paper);color:var(--muted)}
 .speed button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
 
 #goal{position:fixed;z-index:4;top:calc(var(--hudH) + 6px);left:max(16px,env(safe-area-inset-left,0px));background:rgba(13,59,79,.86);color:var(--paper);
@@ -213,6 +215,7 @@ button:focus-visible{outline:3px solid var(--lagoon);outline-offset:2px}
       <div class="chip"><small id="vDay">Day 1</small><b id="vTime">9:00 AM</b></div>
       <div class="chip"><small>Weather</small><b id="vWeather">Sunny</b></div>
     </div>
+    <div class="speed snd"><button id="musicBtn" aria-pressed="true" aria-label="Music on" title="Music on (M)"></button></div>
     <div class="speed" role="group" aria-label="Game speed">
       <button data-speed="0" aria-label="Pause" title="Pause (Space)"><svg width="12" height="12" viewBox="0 0 12 12"><rect x="1" y="1" width="3.5" height="10" rx="1" fill="currentColor"/><rect x="7.5" y="1" width="3.5" height="10" rx="1" fill="currentColor"/></svg></button>
       <button data-speed="1" aria-label="Normal speed" title="Normal speed (1)">1×</button>
@@ -1958,6 +1961,26 @@ function dAct(a,arg){
 modalEl.addEventListener('click',e=>{const a=e.target.closest('[data-dact]');if(a)dAct(a.dataset.dact,a.dataset.arg);});
 modalEl.addEventListener('input',e=>{if(e.target.id==='dName'&&D)D.name=e.target.value.slice(0,24);});
 addEventListener('keydown',e=>{if(e.key==='Escape'&&D){D=null;modalEl.hidden=true;}});
+
+/* ---------------- music ---------------- */
+const MUSIC_SRC='music/seratonin-from-the-sun.mp3',musicBtn=document.getElementById('musicBtn');
+const IC_ON='<svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><path d="M1.5 5.5h3l4-3.5v12l-4-3.5h-3z" fill="currentColor"/><path d="M11 5.2a3.6 3.6 0 0 1 0 5.6M13.2 3a6.6 6.6 0 0 1 0 10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+const IC_OFF='<svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><path d="M1.5 5.5h3l4-3.5v12l-4-3.5h-3z" fill="currentColor"/><path d="M11.5 5.5l5 5M16.5 5.5l-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+let music=null,musicOn=true,musicUnlocked=false;
+try{musicOn=localStorage.getItem('splashworks-music')!=='off';}catch(e){}
+function getMusic(){if(!music){music=new Audio(MUSIC_SRC);music.loop=true;music.volume=.4;music.preload='auto';}return music;}
+function playMusic(){if(!musicOn||document.hidden||!musicUnlocked)return;const m=getMusic();const pr=m.play();if(pr&&pr.catch)pr.catch(()=>{});}
+function updMusicBtn(){musicBtn.setAttribute('aria-pressed',String(musicOn));musicBtn.innerHTML=musicOn?IC_ON:IC_OFF;
+  const l=musicOn?'Music on':'Music off';musicBtn.setAttribute('aria-label',l+'. Turn music '+(musicOn?'off':'on'));musicBtn.title=l+' (M)';}
+function setMusic(on){musicOn=on;try{localStorage.setItem('splashworks-music',on?'on':'off');}catch(e){}
+  if(on){musicUnlocked=true;playMusic();}else if(music)music.pause();updMusicBtn();}
+musicBtn.addEventListener('click',()=>setMusic(!musicOn));
+const unlockMusic=e=>{if(e&&e.target&&e.target.closest&&e.target.closest('#musicBtn'))return;if(musicUnlocked)return;musicUnlocked=true;playMusic();
+  ['pointerdown','keydown','touchend'].forEach(ev=>removeEventListener(ev,unlockMusic,true));};
+['pointerdown','keydown','touchend'].forEach(ev=>addEventListener(ev,unlockMusic,true));
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(music)music.pause();}else playMusic();});
+addEventListener('keydown',e=>{if((e.key==='m'||e.key==='M')&&!(e.target.closest&&e.target.closest('input,textarea')))setMusic(!musicOn);});
+updMusicBtn();
 
 /* ---------------- save / boot ---------------- */
 const KEY='splashworks-save-v1';
