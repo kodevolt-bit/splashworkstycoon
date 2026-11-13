@@ -2,7 +2,7 @@
 
 An isometric water park tycoon game that runs in the browser. Build pools, slides and food stands on a beachfront plot, hire staff, set prices and keep your guests happy.
 
-The whole game is one file, `index.html`. There is no build step and nothing to install.
+The game itself is one file, `index.html`. The other files are the home-screen icons and app manifest. There is no build step and nothing to install.
 
 ## Play it
 
@@ -15,11 +15,11 @@ Reach **150 guests in the park at once** with a **park rating of 600** by **day 
 
 ## What you can build
 
-**Pools & Slides:** Splash Pad, Lazy River, Wave Pool, Body Slide, Tube Twister, Freefall Drop, Kiddie Pool, Splash Fort, Lily Pad Walk, Diving Pool, Whitewater Rapids, Whirlpool Bowl, Boomerang Wall, Mat Racer, Surf Rider and Water Coaster.
+**Pools & Slides:** Splash Pad, Lazy River, Wave Pool, Body Slide, Tube Twister, Freefall Drop, Kiddie Pool, Splash Fort, Lily Pad Walk, Diving Pool, Whitewater Rapids, Whirlpool Bowl, Boomerang Wall, Mat Racer, Surf Rider, Water Coaster, Aqua Loop, Family Raft Ride, Twin Racers, Bumper Boats, Splash Zip Line and Pirate Splash Ship.
 
 **Slide Designer:** design your own slide square by square. You pick the tower, route, height, color and name, and the game works out its thrill rating, cost and upkeep.
 
-**Food & Drink:** Snack Shack, Smoothie Hut, Ice Cream Cart, Pizza Oven, Taco Truck, Lemonade Stand, Shave Ice Shack and Funnel Cake Stand.
+**Food & Drink:** Snack Shack, Smoothie Hut, Ice Cream Cart, Pizza Oven, Taco Truck, Lemonade Stand, Shave Ice Shack and Funnel Cake Stand, plus sit-down restaurants with patio seating: Sushi Bar, Burger Grill, Noodle House and Smokehouse BBQ.
 
 **Facilities:** Restrooms, Sunscreen Stand, Sun Loungers, Locker Room, First Aid, Cabanas, Outdoor Showers and ATM.
 
@@ -44,6 +44,7 @@ Reach **150 guests in the park at once** with a **park rating of 600** by **day 
 |---|---|---|
 | Pan | Drag, right-drag, or arrow keys / WASD | Drag (two fingers while placing paths) |
 | Zoom | Scroll wheel or `+` / `-` | Pinch |
+| Browse the build menu | Scroll wheel or the arrow buttons | Swipe the row of cards |
 | Place | Click (drag for paths and scenery) | Tap to preview, tap again to build |
 | Rotate before placing | `R` or the Rotate button | Rotate button |
 | Stop building | `Esc` | Select tool |
@@ -51,13 +52,19 @@ Reach **150 guests in the park at once** with a **park rating of 600** by **day 
 
 Click any guest, staff member or building to inspect it.
 
+## Installing on an iPad or iPhone
+
+Once the game is online (for example on GitHub Pages), open its address in **Safari**, tap the **Share** button, then choose **Add to Home Screen**. The Splashworks Tycoon icon appears on the home screen, and the game opens full screen without the browser bars, like an app.
+
+The icon files are `apple-touch-icon.png` and the `icons/` folder. `manifest.webmanifest` gives the same icon and full-screen behavior on Android and desktop Chrome. To change the icon, replace those PNGs with images of the same sizes.
+
 ## Saving
 
 The game saves automatically to your browser's `localStorage` every 30 seconds and at the end of each day. Saves stay in the browser and on the device where you played. Clearing site data erases them.
 
 ## Publishing on GitHub Pages
 
-1. Create a new repository on GitHub and upload `index.html` and this `README.md` to the root.
+1. Create a new repository on GitHub and upload everything in this folder to the root: `index.html`, `apple-touch-icon.png`, `manifest.webmanifest`, the `icons/` folder and this `README.md`.
 2. In the repository, go to **Settings → Pages**.
 3. Under **Build and deployment**, set **Source** to **Deploy from a branch**, choose `main` and `/ (root)`, then click **Save**.
 4. After a minute or two the game will be live at `https://<your-username>.github.io/<repository-name>/`.
